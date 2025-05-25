@@ -47,11 +47,32 @@ void ElGamal::keygen()
     mpz_powm(y, g, x, p);
 }
 
+void ElGamal::generatePrivateKey()
+{
+    // 只生成私钥，不改变公钥参数 p, g, y
+    // 注意：这里需要使用已设置的 q 值
+    // 由于接收方只知道 p, g, y，需要计算 q = (p-1)/2
+    mpz_sub_ui(q, p, 1);
+    mpz_divexact_ui(q, q, 2);
+    
+    // 生成私钥 x ∈ [1, q-1]
+    do {
+        mpz_urandomm(x, state, q);
+    } while (mpz_cmp_ui(x, 1) < 0);
+}
+
 void ElGamal::setPKG(mpz_t p_in, mpz_t g_in, mpz_t y_in)
 {
     mpz_set(p, p_in);
     mpz_set(g, g_in);
     mpz_set(y, y_in);
+}
+
+void ElGamal::getPKG(mpz_t p_out, mpz_t g_out, mpz_t y_out)
+{
+    mpz_set(p_out, p);
+    mpz_set(g_out, g);
+    mpz_set(y_out, y);
 }
 
 void ElGamal::encrypt(mpz_t m, mpz_t c1, mpz_t c2)
@@ -61,29 +82,43 @@ void ElGamal::encrypt(mpz_t m, mpz_t c1, mpz_t c2)
     } catch (const std::invalid_argument& e) {
         throw;
     }
+    
+    mpz_t k;
+    mpz_init(k);
+    
     // 生成随机数 k ∈ [1, q-1]
     do {
-        mpz_urandomm(q, state, q);
-    } while (mpz_cmp_ui(q, 1) < 0);
+        mpz_urandomm(k, state, q);
+    } while (mpz_cmp_ui(k, 1) < 0);
     
     // 2. c1 = g^k mod p
-    mpz_powm(c1, g, q, p);
+    mpz_powm(c1, g, k, p);
     
     // 3. c2 = m * y^k mod p
-    mpz_powm(c2, y, q, p);
+    mpz_powm(c2, y, k, p);
     mpz_mul(c2, c2, m);
     mpz_mod(c2, c2, p);
+    
+    // 清理临时变量
+    mpz_clear(k);
 }
 
 void ElGamal::decrypt(mpz_t c1, mpz_t c2, mpz_t m)
 {
+    // 创建临时变量存储中间结果
+    mpz_t s;
+    mpz_init(s);
+    
     // 1. s = c1^x mod p
-    mpz_powm(q, c1, x, p);
+    mpz_powm(s, c1, x, p);
     
     // 2. m = c2 * s^(-1) mod p
-    mpz_invert(q, q, p);
-    mpz_mul(m, c2, q);
+    mpz_invert(s, s, p);
+    mpz_mul(m, c2, s);
     mpz_mod(m, m, p);
+    
+    // 清理临时变量
+    mpz_clear(s);
 }
 
 void ElGamal::clean()
@@ -107,11 +142,4 @@ void ElGamal::checkM(mpz_t m)
     {
         throw std::invalid_argument("Invalid message: m must be in [2, p-1]");
     }
-}
-
-void ElGamal::getPKG(mpz_t p_out, mpz_t g_out, mpz_t y_out)
-{
-    mpz_set(p_out, p);
-    mpz_set(g_out, g);
-    mpz_set(y_out, y);
 }

@@ -23,7 +23,7 @@ void MessageEncryptor::GetPKG(mpz_t p, mpz_t g, mpz_t y)
 void MessageEncryptor::ReceivePKG(mpz_t p, mpz_t g, mpz_t y)
 {
     client.setPKG(p, g, y);
-    client.keygen();
+    client.generatePrivateKey(); // 修改：只生成私钥，不覆盖公钥参数
 }
 
 void MessageEncryptor::SendSecret(mpz_t c1, mpz_t c2)
@@ -33,7 +33,7 @@ void MessageEncryptor::SendSecret(mpz_t c1, mpz_t c2)
 
     client.getM(m);
     SetSM4Key(m, 1); // client
-
+    cout << "client m=" << m << endl;
     client.encrypt(m, c1_1, c2_1);
 
     mpz_set(c1, c1_1);
@@ -74,6 +74,7 @@ void MessageEncryptor::ReceiveSecret(mpz_t c1, mpz_t c2)
     mpz_init(m);
 
     server.decrypt(c1, c2, m);
+    cout << "server m=" << m << endl;
     SetSM4Key(m, 0); // server
 
     mpz_clear(m);

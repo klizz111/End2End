@@ -36,6 +36,12 @@ int main() {
 
     encrypter.ReceiveSecret(cc1, cc2);
 
+    string key1, key2;
+    encrypter.GetSM4Key(key1, key2);
+
+    cout << "key1= " << key1 << endl;
+    cout << "key2= " << key2 << endl;
+    
     string message = "你好你好你好你好你好你好你好你好你好你好你好你好";
     string encrypted_message;
     encrypter.EncryptMessage(message, encrypted_message);

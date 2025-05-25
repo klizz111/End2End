@@ -18,6 +18,10 @@ public:
     void ReceiveSecret(mpz_t c1, mpz_t c2); 
     void EncryptMessage(const string& message, string& encrypted_message);
     void DecryptMessage(const string& encrypted_message, string& message);
+    void GetSM4Key(string& key1, string& key2){
+        key1 = sm4_key_server;
+        key2 = sm4_key_client;
+    }
 private:
     int bits;
     ElGamal server; // server, 指'我'作为服务端接受请求
