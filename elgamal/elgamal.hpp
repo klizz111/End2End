@@ -13,6 +13,7 @@ public:
     void clean();
     void getM(mpz_t m); // 获取128 bits 随机数，用于产生SM4密钥
     void checkM(mpz_t m); // 检查明文是否符合要求
+    void getPKG(mpz_t p_out, mpz_t g_out, mpz_t y_out);
 private:
     mpz_t p, g, y, x, q;  
     gmp_randstate_t state;  

@@ -23,4 +23,4 @@ void genSafePrime(mpz_t p, mpz_t q, int bits);
 
 // 运算符重载声明
 std::ostream &operator<<(std::ostream &os, const mpz_t &mpz);
-std::istream &operator>>(std::istream &is, mpz_t &mpz);
+// std::istream &operator>>(std::istream &is, mpz_t &mpz);

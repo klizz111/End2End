@@ -16,6 +16,7 @@ ElGamal::~ElGamal()
     }
 }
 
+// gen p q g h x y
 void ElGamal::keygen()
 {
     // 1. 生成安全素数 p = 2q + 1
@@ -106,4 +107,11 @@ void ElGamal::checkM(mpz_t m)
     {
         throw std::invalid_argument("Invalid message: m must be in [2, p-1]");
     }
+}
+
+void ElGamal::getPKG(mpz_t p_out, mpz_t g_out, mpz_t y_out)
+{
+    mpz_set(p_out, p);
+    mpz_set(g_out, g);
+    mpz_set(y_out, y);
 }
