@@ -25,7 +25,7 @@ file(MAKE_DIRECTORY ${PROJECT_SOURCE_DIR}/test)
 
 # 源文件
 file(GLOB_RECURSE GETPRIME "getPrime/getPrime.cpp")
-# file(GLOB_RECURSE ELGAMAL "elgamal/elgamal.cpp")
+file(GLOB_RECURSE ELGAMAL "elgamal/elgamal.cpp")
 file(GLOB_RECURSE SM4 "sm4/sm34.cpp")
 # file(GLOB_RECURSE ENCRYPTER "encrypter/encrypter.cpp")
 
@@ -33,7 +33,7 @@ file(GLOB_RECURSE SM4 "sm4/sm34.cpp")
 add_executable(Miller-Rabin ${GETPRIME} getPrime/test_MillerRabbin.cpp)
 # add_executable(Miller-Rabbin ${GETPRIME} getPrime/test/Miller-Rabbin.cpp)
 # add_executable(test_mod ${GETPRIME} getPrime/test/test_mod.cpp)
-# add_executable(ElGamal ${GETPRIME} ${ELGAMAL} elgamal/test_elgamal.cpp)
+add_executable(ElGamal ${GETPRIME} ${ELGAMAL} elgamal/test_elgamal.cpp)
 # add_executable(encrypter ${GETPRIME} ${SM4} ${ELGAMAL} ${ENCRYPTER} encrypter/test_encrypter.cpp)
 add_executable(getPrime_test ${GETPRIME} getPrime/test_getPrime.cpp)
 
@@ -54,13 +54,13 @@ endfunction()
 # configure_target(End2End ${PROJECT_SOURCE_DIR})
 configure_target(Miller-Rabin ${PROJECT_SOURCE_DIR}/test)
 # configure_target(test_mod ${PROJECT_SOURCE_DIR}/test)
-# configure_target(ElGamal ${PROJECT_SOURCE_DIR}/test)
+configure_target(ElGamal ${PROJECT_SOURCE_DIR}/test)
 # configure_target(encrypter ${PROJECT_SOURCE_DIR}/test)
 configure_target(getPrime_test ${PROJECT_SOURCE_DIR}/test)
 
 # make clean-all
 add_custom_target(clean-all
-    COMMAND ${CMAKE_COMMAND} -E remove_directory ${PROJECT_SOURCE_DIR}/test
+    # COMMAND ${CMAKE_COMMAND} -E remove_directory ${PROJECT_SOURCE_DIR}/test
     # COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_BINARY_DIR}
     COMMENT "清理所有构建文件和test文件夹"
 )

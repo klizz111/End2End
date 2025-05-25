@@ -2,6 +2,33 @@
 #include <cstdlib>
 #include <ctime>
 
+// 全局随机数状态
+static gmp_randstate_t global_rand_state;
+static bool rand_state_initialized = false;
+
+// 初始化全局随机数状态
+static void init_global_rand_state() {
+    if (!rand_state_initialized) {
+        gmp_randinit_default(global_rand_state);
+        gmp_randseed_ui(global_rand_state, time(NULL));
+        rand_state_initialized = true;
+        
+        // 注册清理函数，程序退出时自动清理
+        atexit([]() {
+            if (rand_state_initialized) {
+                gmp_randclear(global_rand_state);
+                rand_state_initialized = false;
+            }
+        });
+    }
+}
+
+// 获取全局随机数状态
+static gmp_randstate_t& get_global_rand_state() {
+    init_global_rand_state();
+    return global_rand_state;
+}
+
 // 运算符重载实现
 std::ostream &operator<<(std::ostream &os, const mpz_t &mpz)
 {
@@ -53,10 +80,8 @@ bool MillerRabin(mpz_t n, int k)
         r++;
     }
     
-    // 初始化随机数生成器
-    gmp_randstate_t state;
-    gmp_randinit_default(state);
-    gmp_randseed_ui(state, time(NULL));
+    // 使用全局随机数状态
+    gmp_randstate_t& state = get_global_rand_state();
     
     // 进行 k 轮测试
     for (int i = 0; i < k; i++) {
@@ -90,7 +115,6 @@ bool MillerRabin(mpz_t n, int k)
             mpz_clear(temp);
             mpz_clear(a);
             mpz_clear(x);
-            gmp_randclear(state);
             return false;
         }
     }
@@ -101,16 +125,14 @@ bool MillerRabin(mpz_t n, int k)
     mpz_clear(temp);
     mpz_clear(a);
     mpz_clear(x);
-    gmp_randclear(state);
     
     return true;
 }
 
 void getPrime(mpz_t p, int bits)
 {
-    gmp_randstate_t state;
-    gmp_randinit_default(state);
-    gmp_randseed_ui(state, time(NULL));
+    // 使用全局随机数状态
+    gmp_randstate_t& state = get_global_rand_state();
     
     mpz_t candidate;
     mpz_init(candidate);
@@ -130,14 +152,12 @@ void getPrime(mpz_t p, int bits)
     mpz_set(p, candidate);
     
     mpz_clear(candidate);
-    gmp_randclear(state);
 }
 
 void genSafePrime(mpz_t p, mpz_t q, int bits)
 {
-    gmp_randstate_t state;
-    gmp_randinit_default(state);
-    gmp_randseed_ui(state, time(NULL));
+    // 使用全局随机数状态
+    gmp_randstate_t& state = get_global_rand_state();
     
     mpz_t candidate_q, candidate_p;
     mpz_init(candidate_q);
@@ -162,5 +182,4 @@ void genSafePrime(mpz_t p, mpz_t q, int bits)
     
     mpz_clear(candidate_q);
     mpz_clear(candidate_p);
-    gmp_randclear(state);
 }
