@@ -7,7 +7,7 @@
 /// @param n 
 /// @param k times to test
 /// @return 
-bool MillerRabin(mpz_t n, int k);
+bool MillerRabin(mpz_t n, int k = 20);
 
 /// @brief Gen a random prime number with given bits
 /// @param p 

@@ -30,6 +30,7 @@ file(GLOB_RECURSE SM4 "sm4/sm34.cpp")
 # file(GLOB_RECURSE ENCRYPTER "encrypter/encrypter.cpp")
 
 # 添加可执行文件
+add_executable(Miller-Rabin ${GETPRIME} getPrime/test_MillerRabbin.cpp)
 # add_executable(Miller-Rabbin ${GETPRIME} getPrime/test/Miller-Rabbin.cpp)
 # add_executable(test_mod ${GETPRIME} getPrime/test/test_mod.cpp)
 # add_executable(ElGamal ${GETPRIME} ${ELGAMAL} elgamal/test_elgamal.cpp)
@@ -51,7 +52,7 @@ function(configure_target target_name output_dir)
 endfunction()
 
 # configure_target(End2End ${PROJECT_SOURCE_DIR})
-# configure_target(Miller-Rabbin ${PROJECT_SOURCE_DIR}/test)
+configure_target(Miller-Rabin ${PROJECT_SOURCE_DIR}/test)
 # configure_target(test_mod ${PROJECT_SOURCE_DIR}/test)
 # configure_target(ElGamal ${PROJECT_SOURCE_DIR}/test)
 # configure_target(encrypter ${PROJECT_SOURCE_DIR}/test)
