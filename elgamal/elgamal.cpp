@@ -49,9 +49,6 @@ void ElGamal::keygen()
 
 void ElGamal::generatePrivateKey()
 {
-    // 只生成私钥，不改变公钥参数 p, g, y
-    // 注意：这里需要使用已设置的 q 值
-    // 由于接收方只知道 p, g, y，需要计算 q = (p-1)/2
     mpz_sub_ui(q, p, 1);
     mpz_divexact_ui(q, q, 2);
     
@@ -66,6 +63,11 @@ void ElGamal::setPKG(mpz_t p_in, mpz_t g_in, mpz_t y_in)
     mpz_set(p, p_in);
     mpz_set(g, g_in);
     mpz_set(y, y_in);
+}
+
+void ElGamal::initX()
+{
+    mpz_urandomm(x, state, p);
 }
 
 void ElGamal::getPKG(mpz_t p_out, mpz_t g_out, mpz_t y_out)

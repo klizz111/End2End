@@ -7,7 +7,8 @@ public:
     ~ElGamal();
 
     void keygen();
-    void generatePrivateKey(); // 新增：只生成私钥，不改变公钥参数
+    void generatePrivateKey(); 
+    void initX();
     void getPKG(mpz_t p_out, mpz_t g_out, mpz_t y_out);  // 添加获取公钥参数的方法
     void setPKG(mpz_t p_in, mpz_t g_in, mpz_t y_in);
     void encrypt(mpz_t m, mpz_t c1, mpz_t c2);
