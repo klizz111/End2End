@@ -27,7 +27,7 @@ file(GLOB_RECURSE GETPRIME "getPrime/getPrime.cpp")
 file(GLOB_RECURSE ELGAMAL "elgamal/elgamal.cpp")
 file(GLOB_RECURSE SM4 "sm4/sm34.cpp")
 file(GLOB_RECURSE ENCRYPTER "encrypter/encrypter.cpp")
-file(GLOB_RECURSE SERVER_SRC "server/server.cpp")
+# file(GLOB_RECURSE SERVER_SRC "server/server.cpp")
 
 # 添加可执行文件
 # add_executable(Miller-Rabin ${GETPRIME} getPrime/test_MillerRabbin.cpp)
@@ -36,8 +36,9 @@ file(GLOB_RECURSE SERVER_SRC "server/server.cpp")
 # add_executable(ElGamal ${GETPRIME} ${ELGAMAL} elgamal/test_elgamal.cpp)
 # add_executable(encrypter ${GETPRIME} ${SM4} ${ELGAMAL} ${ENCRYPTER} encrypter/test_encrypter.cpp)
 # add_executable(server ${GETPRIME} ${SM4} ${ELGAMAL} ${ENCRYPTER} server/main.cpp)
-add_executable(test_server ${GETPRIME} ${SM4} ${ELGAMAL} ${ENCRYPTER} ${SERVER_SRC} server/test_server.cpp)
+# add_executable(test_server ${GETPRIME} ${SM4} ${ELGAMAL} ${ENCRYPTER} ${SERVER_SRC} server/test_server.cpp)
 # add_executable(getPrime_test ${GETPRIME} getPrime/test_getPrime.cpp)
+add_excutable(test_core ${GETPRIME} ${SM4} ${ELGAMAL} ${ENCRYPTER} backend/test_core.cpp)
 
 # 处理静态链接
 function(configure_target target_name output_dir)
@@ -59,8 +60,9 @@ endfunction()
 # configure_target(ElGamal ${PROJECT_SOURCE_DIR}/test)
 # configure_target(encrypter ${PROJECT_SOURCE_DIR}/test)
 # configure_target(server ${PROJECT_SOURCE_DIR}/test)
-configure_target(test_server ${PROJECT_SOURCE_DIR}/test)
+# configure_target(test_server ${PROJECT_SOURCE_DIR}/test)
 # configure_target(getPrime_test ${PROJECT_SOURCE_DIR}/test)
+configure_target(test_core ${PROJECT_SOURCE_DIR}/test)
 
 # make clean-all
 add_custom_target(clean-all

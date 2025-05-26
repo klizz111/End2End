@@ -44,5 +44,8 @@ public:
     Core();
     
     bool isPortAvailable(int port);
-    int findAvailablePort(int start_port, int max_attempts = 10)
+    int findAvailablePort(int start_port, int max_attempts = 10);
+    void setupRoutes();
+
+    void start();
 };

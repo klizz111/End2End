@@ -22,6 +22,7 @@ public:
         key1 = sm4_key_server;
         key2 = sm4_key_client;
     }
+    
 private:
     int bits;
     ElGamal server; // server, 指'我'作为服务端接受请求
