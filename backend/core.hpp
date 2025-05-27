@@ -2,6 +2,7 @@
 #include <memory>
 #include <string>
 #include <gmp.h>
+#include <thread>
 using namespace std;
 
 #include "../encrypter/encrypter.hpp"
@@ -24,11 +25,13 @@ enum class ConnectionStatus {
 
 class Core {
 private:
+    thread server_thread;
     unique_ptr<httplib::Server> server;
     unique_ptr<httplib::Client> client;
     unique_ptr<MessageEncryptor> encryptor;
     
     ConnectionStatus status;
+    ServerMode mode;
     string destination_host;
     int destination_port;
     int listen_port;
@@ -41,11 +44,17 @@ private:
     bool key_exchange_completed;
 
 public:
-    Core();
-    
+    Core(ServerMode mode = ServerMode::NONE, int bits = 1024);
+    ~Core();
     bool isPortAvailable(int port);
     int findAvailablePort(int start_port, int max_attempts = 10);
     void setupRoutes();
+    void SetDestination(const string& host, int port);
+    void clientHello();
+    void maintainingServer();
+    void GetServerPublicKey();
+    void ConnectionTest();
+    void WhereIsMyServer();
 
     void start();
 };

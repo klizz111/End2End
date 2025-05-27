@@ -38,7 +38,8 @@ file(GLOB_RECURSE ENCRYPTER "encrypter/encrypter.cpp")
 # add_executable(server ${GETPRIME} ${SM4} ${ELGAMAL} ${ENCRYPTER} server/main.cpp)
 # add_executable(test_server ${GETPRIME} ${SM4} ${ELGAMAL} ${ENCRYPTER} ${SERVER_SRC} server/test_server.cpp)
 # add_executable(getPrime_test ${GETPRIME} getPrime/test_getPrime.cpp)
-add_excutable(test_core ${GETPRIME} ${SM4} ${ELGAMAL} ${ENCRYPTER} backend/test_core.cpp)
+add_executable(test_client ${GETPRIME} ${SM4} ${ELGAMAL} ${ENCRYPTER} backend/core.cpp backend/test_client.cpp)
+add_executable(test_server ${GETPRIME} ${SM4} ${ELGAMAL} ${ENCRYPTER} backend/core.cpp backend/test_server.cpp)
 
 # 处理静态链接
 function(configure_target target_name output_dir)
@@ -51,7 +52,8 @@ function(configure_target target_name output_dir)
     set_target_properties(${target_name} PROPERTIES LINK_SEARCH_END_STATIC ON)
     
     # 链接库
-    target_link_libraries(${target_name} -static gmp gmpxx pthread)
+    # target_link_libraries(${target_name} -static gmp gmpxx pthread)
+    target_link_libraries(${target_name} gmp gmpxx pthread)
 endfunction()
 
 # configure_target(End2End ${PROJECT_SOURCE_DIR})
@@ -62,7 +64,8 @@ endfunction()
 # configure_target(server ${PROJECT_SOURCE_DIR}/test)
 # configure_target(test_server ${PROJECT_SOURCE_DIR}/test)
 # configure_target(getPrime_test ${PROJECT_SOURCE_DIR}/test)
-configure_target(test_core ${PROJECT_SOURCE_DIR}/test)
+configure_target(test_client ${PROJECT_SOURCE_DIR}/test)
+configure_target(test_server ${PROJECT_SOURCE_DIR}/test)
 
 # make clean-all
 add_custom_target(clean-all
