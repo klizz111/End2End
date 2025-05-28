@@ -4,9 +4,10 @@
 #define RED "\033[31m"
 #define GREEN "\033[32m"
 #define BLUE "\033[34m"
+#define YELLOW "\033[33m"
 #define RESET "\033[0m"
 
-Core::Core(ServerMode mode, int bits)
+Core::Core(ServerMode mode, int bits) : serv_bits(bits)
 {
     mpz_inits(p, g, y, remote_p, remote_g, remote_y, c1, c2, NULL);
     status = ConnectionStatus::DISCONNECTED;
@@ -72,12 +73,15 @@ void Core::setupRoutes()
     
     // 接受client发送的hello请求
     server->Get("/hello", [this](const httplib::Request&, httplib::Response& res) {
-        res.set_content("Hello from server!", "text/plain");
+        cout << YELLOW << "[/hello] Request received" << RESET << endl;
+        string serv_bits = to_string(this->serv_bits);
+        res.set_content(serv_bits, "text/plain");
         cout << GREEN << "Received hello request" << RESET << endl;
     });
 
     // 发送我的PKG
     server->Get("/send_pkg", [this](const httplib::Request&, httplib::Response& res) {
+        cout << YELLOW << "[/send_pkg] Request received" << RESET << endl;
         // 直接转为string
         json j;
         j["p"] = mpz_get_str(NULL, 16, p);
@@ -89,6 +93,7 @@ void Core::setupRoutes()
 
     // 接受client告知的server地址
     server->Post("/where_are_you", [this](const httplib::Request& req, httplib::Response& res) {
+        cout << YELLOW << "[/where_are_you] Request received" << RESET << endl;
         json j = json::parse(req.body);
         string host = j["host"];
         int port = j["port"];
@@ -98,10 +103,9 @@ void Core::setupRoutes()
         string message = "Server address set to: " + host + ":" + to_string(port);
         res.set_content(message,"text/plain");
 
-        cout << GREEN << "Received server address from client: " << host << ":" << port << RESET << endl;
-
-        SetDestination(host, port);
-        client ;
+        if (mode == ServerMode::SERVER) {
+            GetServerPublicKey();
+        }
     });
 }
 
@@ -125,10 +129,7 @@ void Core::maintainingServer()
 
 void Core::GetServerPublicKey()
 {
-    if (!client) {
-        cerr << "Client未初始化！请先调用 start() 方法 与 SetDestination() 方法。" << endl;
-        return;
-    }
+    CheckClient();
 
     cout << GREEN << "Requesting public key parameters from server..." << RESET << endl;
     auto res = client->Get("/send_pkg");
@@ -150,16 +151,18 @@ void Core::GetServerPublicKey()
 
 void Core::ConnectionTest()
 {
-    if (!client) {
-        cerr << "Client未初始化！请先调用 start() 方法 与 SetDestination() 方法。" << endl;
-        return;
-    }
+    CheckClient();
 
     cout << GREEN << "Testing connection to " << destination_host << ":" << destination_port << RESET << endl;
     auto res = client->Get("/hello");
 
     if (res && res->status == 200) {
         cout << GREEN << "Connection successful: " << res->body << RESET << endl;
+        if (res->body == to_string(serv_bits)) {
+            cout << GREEN << "Server is running and responding correctly." << RESET << endl;
+        } else {
+            cerr << RED << "Unexpected response from server: " << res->body << RESET << endl;
+        }
     } else {
         cerr << RED << "Connection failed: HTTP status code " << (res ? to_string(res->status) : "N/A") << RESET << endl;
     }
@@ -168,23 +171,29 @@ void Core::ConnectionTest()
 
 void Core::WhereIsMyServer()
 {
-    if (!client) {
-        cerr << "Client未初始化！请先调用 start() 方法 与 SetDestination() 方法。" << endl;
-        return;
-    }
+    CheckClient();
 
     json j;
-    j["host"] = destination_host;
-    j["port"] = destination_port;
+    j["host"] = "localhost";
+    j["port"] = listen_port;
 
-    cout << GREEN << "Sending server address to client..." << RESET << endl;
+    cout << GREEN << "Sending my server address to client..." << RESET << endl;
     auto res = client->Post("/where_are_you", j.dump(), "application/json");
 
     if (res && res->status == 200) {
-        cout << GREEN << "Server address sent successfully: " << res->body << RESET << endl;
+        cout << GREEN << "Server address sent successfully: " << RESET 
+        << "{" << res->body << "}" << endl;
     } else {
         cerr << RED << "Failed to send server address: HTTP status code " 
              << (res ? to_string(res->status) : "N/A") << RESET << endl;
+    }
+}
+
+void Core::CheckClient()
+{
+    if (!client) {
+        cerr << "Client未初始化！请先调用 start() 方法 与 SetDestination() 方法。" << endl;
+        return;
     }
 }
 
@@ -208,8 +217,9 @@ void Core::start()
     this_thread::sleep_for(chrono::milliseconds(100));
     
     cout << GREEN << "Listening on port " << listen_port << RESET << endl;
-    if (mode)
+    // if (mode)
     client = make_unique<httplib::Client>(destination_host, destination_port);
+    client_status = true;
 }
 
 

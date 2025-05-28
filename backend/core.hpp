@@ -36,6 +36,8 @@ private:
     int destination_port;
     int listen_port;
     int api_port;
+    int serv_bits;
+    bool client_status;
     
     // 密钥交换相关
     mpz_t p, g, y;  // 本地公钥参数
@@ -55,6 +57,7 @@ public:
     void GetServerPublicKey();
     void ConnectionTest();
     void WhereIsMyServer();
+    void CheckClient();
 
     void start();
 };
