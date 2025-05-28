@@ -38,8 +38,8 @@ file(GLOB_RECURSE ENCRYPTER "encrypter/encrypter.cpp")
 # add_executable(server ${GETPRIME} ${SM4} ${ELGAMAL} ${ENCRYPTER} server/main.cpp)
 # add_executable(test_server ${GETPRIME} ${SM4} ${ELGAMAL} ${ENCRYPTER} ${SERVER_SRC} server/test_server.cpp)
 # add_executable(getPrime_test ${GETPRIME} getPrime/test_getPrime.cpp)
-add_executable(test_client ${GETPRIME} ${SM4} ${ELGAMAL} ${ENCRYPTER} backend/core.cpp backend/test_client.cpp)
-add_executable(test_server ${GETPRIME} ${SM4} ${ELGAMAL} ${ENCRYPTER} backend/core.cpp backend/test_server.cpp)
+add_executable(test_client ${GETPRIME} ${SM4} ${ELGAMAL} ${ENCRYPTER} core/core.cpp core/test_client.cpp)
+add_executable(test_server ${GETPRIME} ${SM4} ${ELGAMAL} ${ENCRYPTER} core/core.cpp core/test_server.cpp)
 
 # 处理静态链接
 function(configure_target target_name output_dir)
