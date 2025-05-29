@@ -7,7 +7,7 @@
 using namespace std;
 
 int main() {
-    cout << "=== 安全通信系统 - 客户端测试 ===" << endl;
+    cout << "=== Client测试 ===" << endl;
     
     // 获取服务器地址
     string host = "localhost";
@@ -32,7 +32,7 @@ int main() {
     // 设置消息接收处理器
     client.setMessageHandler([](const string& message) {
         cout << "\n[收到消息] " << message << endl;
-        cout << "请输入回复消息 (输入 'quit' 退出): ";
+        cout << "> ";
         cout.flush();
     });
     
@@ -50,7 +50,7 @@ int main() {
     
     if (client.isConnected()) {
         cout << "\n连接成功，密钥交换完成！" << endl;
-        cout << "现在可以开始安全通信了。" << endl;
+        cout << "现在可以开始通信了。" << endl;
         cout << "请输入消息发送给服务器 (输入 'quit' 退出):" << endl;
         
         string input;

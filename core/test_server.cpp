@@ -7,7 +7,7 @@
 using namespace std;
 
 int main() {
-    cout << "=== 安全通信系统 - 服务器端测试 ===" << endl;
+    cout << "=== Server测试 ===" << endl;
     
     // 创建服务器实例
     Core server(256);
@@ -27,7 +27,7 @@ int main() {
     }
     
     cout << "服务器已启动，等待客户端连接..." << endl;
-    cout << "服务器地址: 0.0.0.0:8080" << endl;
+    cout << "服务器地址: localhost:8080" << endl;
     
     // 等待连接建立
     server.waitForConnection();

@@ -3,6 +3,9 @@
 #include <iomanip>
 #include <sstream>
 #include <random>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <unistd.h>
 
 #define RED "\033[31m"
 #define GREEN "\033[32m"
@@ -25,8 +28,9 @@ Core::~Core() {
 
 bool Core::startServer(const string& host, int port) {
     mode = SERVER;
+    port = findAvailablePort(port, 10);
     serverHost = host;
-    serverPort = findAvailablePort(port); 
+    serverPort = port; 
 
     setState(CONNECTING);
     
@@ -268,10 +272,10 @@ bool Core::sendPublicKey() {
             mpz_clears(p, g, y, NULL);
             return success;
         } catch (const exception& e) {
-            log("Error parsing public key response: " + string(e.what()));
+            log("Error parsing public key response: " + string(e.what()), WARNING);
         }
     } else {
-        log("Failed to send public key");
+        log("Failed to send public key", WARNING);
     }
     
     mpz_clears(p, g, y, NULL);
@@ -294,7 +298,7 @@ bool Core::receivePublicKey(const json& data) {
         mpz_clears(p, g, y, NULL);
         return true;
     } catch (const exception& e) {
-        log("Error processing public key: " + string(e.what()));
+        log("Error processing public key: " + string(e.what()), WARNING);
         return false;
     }
 }
@@ -322,10 +326,10 @@ bool Core::sendSecret() {
             mpz_clears(c1, c2, NULL);
             return success;
         } catch (const exception& e) {
-            log("Error parsing secret response: " + string(e.what()));
+            log("Error parsing secret response: " + string(e.what()), WARNING);
         }
     } else {
-        log("Failed to send secret");
+        log("Failed to send secret", WARNING);
     }
     
     mpz_clears(c1, c2, NULL);
@@ -413,7 +417,7 @@ void Core::processMessageQueue() {
                 if (result && result->status == 200) {
                     log("Sent encrypted message: " + message);
                 } else {
-                    log("Failed to send message: " + message);
+                    log("Failed to send message: " + message, WARNING);
                 }
             }
             
@@ -442,7 +446,7 @@ void Core::pollMessages() {
                         }
                     }
                 } catch (const exception& e) {
-                    log("Error parsing messages: " + string(e.what()));
+                    log("Error parsing messages: " + string(e.what()), WARNING);
                 }
             }
         }
@@ -557,26 +561,39 @@ bool Core::isSessionValid() const {
 
 bool Core::isPortAvailable(int port) const
 {
-    try {
-        httplib::Server testServer;
-        // 尝试监听端口，如果成功说明端口可用
-        bool available = testServer.bind_to_port("127.0.0.1", port);
-        return available;
-    } catch (...) {
+    int sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    if (sockfd == -1) {
         return false;
     }
+    
+    int opt = 1;
+    setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+    
+    struct sockaddr_in addr;
+    addr.sin_family = AF_INET;
+    addr.sin_addr.s_addr = INADDR_ANY;
+    addr.sin_port = htons(port);
+    
+    bool available = (bind(sockfd, (struct sockaddr*)&addr, sizeof(addr)) == 0);
+    
+    close(sockfd);
+    
+    return available;
 }
 
 int Core::findAvailablePort(int port, int Maxoffset)
 {
     for (int offset = 0; offset <= Maxoffset; ++offset) {
+        log("Checking port " + to_string(port + offset));
         if (isPortAvailable(port + offset)) {
+            log("Port " + to_string(port + offset) + " is available.");
             return port + offset;
         }
         if (isPortAvailable(port - offset) && offset != 0) {
+            log("Port " + to_string(port - offset) + " is available.");
             return port - offset;
         }
     }
-    log("No available port found within the specified range.");
+    log("No available port found within the specified range.", WARNING);
     return 0;
 }
