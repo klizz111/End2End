@@ -71,8 +71,8 @@ configure_target(test_client ${PROJECT_SOURCE_DIR}/test)
 configure_target(test_server ${PROJECT_SOURCE_DIR}/test)
 configure_target(end2end ${PROJECT_SOURCE_DIR})
 
-# make clean_all 
-add_custom_target(clean_all
+# make clean-all 
+add_custom_target(clean-all
     COMMAND ${CMAKE_COMMAND} -E remove_directory ${PROJECT_SOURCE_DIR}/test
     COMMAND ${CMAKE_COMMAND} -E remove_directory ${PROJECT_SOURCE_DIR}/lib
     COMMAND ${CMAKE_COMMAND} -E remove ${PROJECT_SOURCE_DIR}/web_server

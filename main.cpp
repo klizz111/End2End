@@ -2,15 +2,31 @@
 #include <iostream>
 #include <string>
 #include <memory>
+#include <signal.h>
+#include <atomic>
 
 using namespace std;
+
+atomic<bool> shutdown_requested(false);
+WebServer* global_webServer = nullptr;
+// 退出信号处理
+void signalHandler(int signum) {
+    if (signum == SIGINT) {
+        cout << "\n\n收到退出信号 (Ctrl+C)，正在关闭服务器..." << endl;
+        shutdown_requested = true;
+        
+        // 如果webServer存在，立即停止
+        if (global_webServer) {
+            global_webServer->stop();
+        }
+    }
+}
 
 void printUsage(const string& programName) {
     cout << "使用方法: " << programName << " [-p port] [-b bits]" << endl;
     cout << "参数:" << endl;
     cout << "  -p port    指定前端服务器端口 (默认: 3000)" << endl;
     cout << "  -b bits    指定加密位数 (默认: 256)" << endl;
-    cout << "  -h         显示此帮助信息" << endl;
     cout << endl;
     cout << "示例:" << endl;
     cout << "  " << programName << "              # 使用默认端口3000，256位加密" << endl;
@@ -20,6 +36,9 @@ void printUsage(const string& programName) {
 }
 
 int main(int argc, char* argv[]) {
+    // 注册信号处理器
+    signal(SIGINT, signalHandler);
+    
     int port = 3000;  // 默认端口
     int bits = 256;   // 默认加密位数
     
@@ -77,7 +96,8 @@ int main(int argc, char* argv[]) {
     cout << "按 Ctrl+C 退出服务器" << endl;
     cout << "=========================" << endl;
     
-    auto webServer = make_unique<WebServer>(port);
+    auto webServer = new WebServer(port);
+    global_webServer = webServer; // 保存全局引用用于信号处理
     
     auto core = make_shared<Core>(bits);
     webServer->setCoreInstance(core);
@@ -86,20 +106,23 @@ int main(int argc, char* argv[]) {
         cerr << "错误: 无法启动Web服务器" << endl;
         return 1;
     }
-    
-    cout << "前端服务器已启动！" << endl;
-    
+        
     try {
-        while (webServer->isRunning()) {
-            this_thread::sleep_for(chrono::milliseconds(100));
+        while (webServer->isRunning() && !shutdown_requested) {
+            this_thread::sleep_for(chrono::milliseconds(100)); 
         }
     } catch (const exception& e) {
         cout << "\n服务器异常: " << e.what() << endl;
     }
     
+    // 清理全局引用
+    global_webServer = nullptr;
+    
     cout << "\n正在关闭服务器..." << endl;
     webServer->stop();
     cout << "服务器已关闭" << endl;
+    
+    delete webServer;
     
     return 0;
 }

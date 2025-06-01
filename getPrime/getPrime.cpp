@@ -1,6 +1,8 @@
 #include "getPrime.hpp"
 #include <cstdlib>
 #include <ctime>
+#include <random>
+#include <chrono>
 
 // 全局随机数状态
 static gmp_randstate_t global_rand_state;
@@ -10,7 +12,20 @@ static bool rand_state_initialized = false;
 static void init_global_rand_state() {
     if (!rand_state_initialized) {
         gmp_randinit_default(global_rand_state);
-        gmp_randseed_ui(global_rand_state, time(NULL));
+        
+        auto now = std::chrono::high_resolution_clock::now();
+        auto duration = now.time_since_epoch();
+        auto nanoseconds = std::chrono::duration_cast<std::chrono::nanoseconds>(duration).count();
+        
+        // 结合时间、随机设备和内存地址
+        std::random_device rd;
+        unsigned long seed = static_cast<unsigned long>(nanoseconds) ^ 
+                            reinterpret_cast<uintptr_t>(&global_rand_state) ^ 
+                            rd() ^ 
+                            static_cast<unsigned long>(time(NULL)) ^
+                            static_cast<unsigned long>(clock());
+        
+        gmp_randseed_ui(global_rand_state, seed);
         rand_state_initialized = true;
         
         // 注册清理函数，程序退出时自动清理

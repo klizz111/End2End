@@ -28,7 +28,7 @@ bool WebServer::start() {
         setupRoutes();
         
         serverThread = make_unique<thread>([this]() {
-            log("启动Web服务器: localhost" + to_string(port));
+            log("启动Web服务器: http://localhost:" + to_string(port));
             setState(RUNNING);
             
             if (!server->listen("0.0.0.0", port)) {
