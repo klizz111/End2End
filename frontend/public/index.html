@@ -233,7 +233,7 @@
             <div class="container">
                 <h2>加密聊天</h2>
                 <div id="chat-container" class="chat-container">
-                    <div class="message received">系统: 等待连接建立...</div>
+                    <div class="message system" id="system-message">系统: 等待连接建立...</div>
                 </div>
                 
                 <div class="form-group">
@@ -241,7 +241,6 @@
                 </div>
                 
                 <button onclick="sendMessage()" id="send-btn" disabled>发送消息</button>
-                <button onclick="receiveMessages()" id="receive-btn" disabled>接收消息</button>
                 
                 <div id="chat-result"></div>
             </div>
@@ -259,6 +258,7 @@
     <script>
         let currentMode = '';
         let isConnected = false;
+        let processedMessages = new Set(); // 用于追踪已处理的消息，避免重复显示
 
         // 页面加载时更新状态
         window.onload = function() {
@@ -306,6 +306,7 @@
                 .then(response => response.json())
                 .then(data => {
                     const statusElement = document.getElementById('status');
+                    const systemMessage = document.getElementById('system-message');
                     const coreStatus = data.core_status;
                     const port = data.port;
                     
@@ -316,10 +317,21 @@
                         statusText = '已连接';
                         statusClass = 'connected';
                         isConnected = true;
+                        
+                        // 隐藏系统等待消息
+                        if (systemMessage) {
+                            systemMessage.style.display = 'none';
+                        }
                     } else {
                         statusText = '未连接';
                         statusClass = 'disconnected';
                         isConnected = false;
+                        
+                        // 显示系统等待消息
+                        if (systemMessage) {
+                            systemMessage.style.display = 'block';
+                            systemMessage.textContent = '系统: 等待连接建立...';
+                        }
                     }
                     
                     statusElement.textContent = `状态: ${statusText} | Web端口: ${port}`;
@@ -327,16 +339,13 @@
                     
                     // 更新聊天按钮状态
                     const sendBtn = document.getElementById('send-btn');
-                    const receiveBtn = document.getElementById('receive-btn');
                     const messageInput = document.getElementById('message-input');
                     
                     if (isConnected) {
                         sendBtn.disabled = false;
-                        receiveBtn.disabled = false;
                         messageInput.disabled = false;
                     } else {
                         sendBtn.disabled = true;
-                        receiveBtn.disabled = true;
                         messageInput.disabled = true;
                     }
                 })
@@ -383,6 +392,9 @@
                     showResult('config-result', data.message || '配置成功!');
                     log(`配置为${mode}模式`);
                     setTimeout(updateStatus, 1000);
+                    
+                    // 清空已处理消息记录，重新开始
+                    processedMessages.clear();
                 } else {
                     showResult('config-result', '配置失败: ' + (data.error || '未知错误'), true);
                 }
@@ -417,6 +429,9 @@
                     messageInput.value = '';
                     showResult('chat-result', '消息发送成功!');
                     log(`发送消息: ${message}`);
+                    
+                    // 记录已发送的消息，避免重复显示
+                    processedMessages.add(message);
                 } else {
                     showResult('chat-result', '发送失败: ' + (data.error || '未知错误'), true);
                 }
@@ -433,8 +448,12 @@
                 .then(data => {
                     if (data.messages && Array.isArray(data.messages) && data.messages.length > 0) {
                         data.messages.forEach(message => {
-                            addChatMessage(message, false);
-                            log(`收到消息: ${message}`);
+                            // 只显示未处理过的消息
+                            if (!processedMessages.has(message)) {
+                                addChatMessage(message, false);
+                                log(`收到消息: ${message}`);
+                                processedMessages.add(message);
+                            }
                         });
                     }
                 })

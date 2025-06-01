@@ -39,7 +39,7 @@ bool Core::startServer(const string& host, int port) {
     
     running = true;
     serverThread = make_unique<thread>([this, host, port]() {
-        log("Starting server on " + host + ":" + to_string(port));
+        log("Starting server on " + host + ":" + to_string(port), IMPORTANT);
         if (server->listen(host.c_str(), port)) {
             log("Server started successfully");
         } else {
@@ -151,7 +151,6 @@ void Core::handleStatus(const httplib::Request& req, httplib::Response& res) {
 }
 
 void Core::handleKeyExchange(const httplib::Request& req, httplib::Response& res) {
-    auto startTime = chrono::steady_clock::now();
     try {
         auto requestData = json::parse(req.body);
         string type = requestData["type"];
@@ -201,9 +200,6 @@ void Core::handleKeyExchange(const httplib::Request& req, httplib::Response& res
         log("Error in key exchange: " + string(e.what()));
         sendJsonResponse(res, {{"error", "Invalid request format"}}, 400);
     }
-    auto endTime = chrono::steady_clock::now();
-    auto duration = chrono::duration_cast<chrono::milliseconds>(endTime - startTime).count();
-    cout << GREEN << "Key exchange completed in " << duration << " ms" << RESET << endl;
 }
 
 void Core::handleSendMessage(const httplib::Request& req, httplib::Response& res) {
@@ -322,8 +318,10 @@ bool Core::receivePublicKey(const json& data) {
         
         encryptor->ReceivePKG(p, g, y);
         
-        log("Received public key: p=" + data["p"].get<string>().substr(0, 20) + "...");
-        
+        string pStr = data["p"].get<string>();
+        string suffix = pStr.length() >= 20 ? pStr.substr(pStr.length() - 20) : pStr;
+        log("Received public key: p=..." + suffix);
+      
         mpz_clears(p, g, y, NULL);
         return true;
     } catch (const exception& e) {

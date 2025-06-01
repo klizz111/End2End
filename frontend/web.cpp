@@ -7,7 +7,6 @@
 
 WebServer::WebServer(int port) : port(port), state(STOPPED), server(nullptr) {
     this->port = findAvailablePort(port, 10);
-    log("WebServer初始化，端口: " + to_string(this->port));
 }
 
 WebServer::~WebServer() {
