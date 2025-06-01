@@ -6,8 +6,20 @@
 
 using namespace std;
 
-int main() {
+int main(int argc, char* argv[]) {
     cout << "=== Server测试 ===" << endl;
+
+    int port= 8848;
+
+    if (argc > 1) {
+        if (argv[1] == string("-p")) {
+            port = stoi(argv[2]);
+        }
+        else {
+            cerr << "未知参数: " << argv[1] << endl;
+            return 1;
+        }
+    }
     
     Core server(256);
     
@@ -18,13 +30,13 @@ int main() {
     });
     
     cout << "正在启动服务器..." << endl;
-    if (!server.startServer("0.0.0.0", 8848)) {
+    if (!server.startServer("0.0.0.0", port)) {
         cout << "服务器启动失败!" << endl;
         return 1;
     }
     
     cout << "服务器已启动，等待客户端连接..." << endl;
-    cout << "服务器地址: localhost:8080" << endl;
+    cout << "服务器地址: localhost:" << port << endl;
     
     server.waitForConnection();
     

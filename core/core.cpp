@@ -76,6 +76,15 @@ bool Core::startClient(const string& host, int port) {
 
     // 测试连接
     auto result = client->Get("/status");
+    auto response = json::parse(result->body);
+    auto bits_ = response["bits"].get<int>();
+
+    if (bits_ != bits) {
+        log("Server bits mismatch: expected " + to_string(bits) + ", got " + to_string(bits_), ERROR);
+        setState(DISCONNECTED);
+        return false;
+    }
+    
     if (!result || result->status != 200) {
         log("Failed to connect to server", ERROR);
         setState(DISCONNECTED);
@@ -137,10 +146,12 @@ void Core::handleStatus(const httplib::Request& req, httplib::Response& res) {
     response["status"] = "online";
     response["state"] = static_cast<int>(state);
     response["session_id"] = sessionId;
+    response["bits"] = bits;
     sendJsonResponse(res, response);
 }
 
 void Core::handleKeyExchange(const httplib::Request& req, httplib::Response& res) {
+    auto startTime = chrono::steady_clock::now();
     try {
         auto requestData = json::parse(req.body);
         string type = requestData["type"];
@@ -190,6 +201,9 @@ void Core::handleKeyExchange(const httplib::Request& req, httplib::Response& res
         log("Error in key exchange: " + string(e.what()));
         sendJsonResponse(res, {{"error", "Invalid request format"}}, 400);
     }
+    auto endTime = chrono::steady_clock::now();
+    auto duration = chrono::duration_cast<chrono::milliseconds>(endTime - startTime).count();
+    cout << GREEN << "Key exchange completed in " << duration << " ms" << RESET << endl;
 }
 
 void Core::handleSendMessage(const httplib::Request& req, httplib::Response& res) {
@@ -242,6 +256,7 @@ void Core::handleReceiveMessages(const httplib::Request& req, httplib::Response&
 }
 
 bool Core::performKeyExchangeAsClient() {
+    auto startTime = chrono::steady_clock::now();
     setState(KEY_EXCHANGING);
     log("Starting key exchange as client");
     
@@ -256,6 +271,9 @@ bool Core::performKeyExchangeAsClient() {
     }
     
     completeKeyExchange();
+    auto endTime = chrono::steady_clock::now();
+    auto duration = chrono::duration_cast<chrono::milliseconds>(endTime - startTime).count();
+    cout << GREEN << "Key exchange completed in " << duration << " ms" << RESET << endl;
     return true;
 }
 

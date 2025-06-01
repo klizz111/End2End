@@ -20,7 +20,7 @@ int main() {
         host = input;
     }
     
-    cout << "请输入服务器端口 (默认: 8080): ";
+    cout << "请输入服务器端口 (默认: 8848): ";
     getline(cin, input);
     if (!input.empty()) {
         port = stoi(input);

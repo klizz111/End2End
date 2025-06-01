@@ -1,5 +1,4 @@
-#ifndef CORE_HPP
-#define CORE_HPP
+#pragma once
 
 #include <iostream>
 #include <string>
@@ -132,4 +131,3 @@ private:
     int findAvailablePort(int port, int Maxoffset = 10);
 };
 
-#endif // CORE_HPP

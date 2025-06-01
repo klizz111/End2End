@@ -5,23 +5,69 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>End2End</title>
     <style>
+        :root {
+            --bg-color: #f5f5f5;
+            --container-bg: white;
+            --text-color: #333;
+            --border-color: #ddd;
+            --input-bg: white;
+            --chat-bg: #f8f9fa;
+            --message-received-bg: #e9ecef;
+            --shadow: rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #1a1a1a;
+            --container-bg: #2d2d2d;
+            --text-color: #e0e0e0;
+            --border-color: #555;
+            --input-bg: #3d3d3d;
+            --chat-bg: #2a2a2a;
+            --message-received-bg: #404040;
+            --shadow: rgba(0,0,0,0.3);
+        }
+
         body {
             font-family: Arial, sans-serif;
             max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
-            background-color: #f5f5f5;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
         }
+        
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--container-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            box-shadow: 0 2px 4px var(--shadow);
+            z-index: 1000;
+        }
+        
         .container {
-            background: white;
+            background: var(--container-bg);
             border-radius: 8px;
             padding: 20px;
             margin-bottom: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 4px var(--shadow);
+            border: 1px solid var(--border-color);
         }
+        
         h1, h2 {
-            color: #333;
+            color: var(--text-color);
         }
+        
         .status {
             padding: 10px;
             border-radius: 4px;
@@ -43,27 +89,35 @@
             color: #856404;
             border: 1px solid #ffeaa7;
         }
+        
         .form-group {
             margin: 15px 0;
         }
+        
         label {
             display: block;
             margin-bottom: 5px;
             font-weight: bold;
+            color: var(--text-color);
         }
+        
         input, select, textarea, button {
             width: 100%;
             padding: 8px;
-            border: 1px solid #ddd;
+            border: 1px solid var(--border-color);
             border-radius: 4px;
             font-size: 14px;
+            background-color: var(--input-bg);
+            color: var(--text-color);
         }
+        
         button {
             background-color: #007bff;
             color: white;
             border: none;
             cursor: pointer;
             margin: 5px 0;
+            transition: background-color 0.3s;
         }
         button:hover {
             background-color: #0056b3;
@@ -72,15 +126,17 @@
             background-color: #6c757d;
             cursor: not-allowed;
         }
+        
         .chat-container {
             height: 300px;
-            border: 1px solid #ddd;
+            border: 1px solid var(--border-color);
             border-radius: 4px;
             padding: 10px;
             overflow-y: auto;
-            background-color: #f8f9fa;
+            background-color: var(--chat-bg);
             margin-bottom: 10px;
         }
+        
         .message {
             margin: 5px 0;
             padding: 8px;
@@ -92,9 +148,16 @@
             text-align: right;
         }
         .message.received {
-            background-color: #e9ecef;
-            color: #333;
+            background-color: var(--message-received-bg);
+            color: var(--text-color);
         }
+        .message.system {
+            background-color: #17a2b8;
+            color: white;
+            text-align: center;
+            font-style: italic;
+        }
+        
         .flex-container {
             display: flex;
             gap: 20px;
@@ -102,6 +165,7 @@
         .flex-item {
             flex: 1;
         }
+        
         .error {
             color: #dc3545;
             margin: 10px 0;
@@ -110,9 +174,22 @@
             color: #28a745;
             margin: 10px 0;
         }
+
+        @media (max-width: 768px) {
+            .flex-container {
+                flex-direction: column;
+            }
+            body {
+                padding: 10px;
+            }
+        }
     </style>
 </head>
 <body>
+    <div class="theme-toggle" onclick="toggleTheme()" title="切换深色/浅色模式">
+        🌙
+    </div>
+    
     <h1>End2End</h1>
     
     <div class="container">
@@ -225,48 +302,27 @@
         }
 
         function updateStatus() {
-            fetch('/status')
+            fetch('/api/status')
                 .then(response => response.json())
                 .then(data => {
                     const statusElement = document.getElementById('status');
-                    const status = data.status;
-                    const mode = data.mode;
-                    const apiPort = data.api_port;
-                    const listenPort = data.listen_port;
+                    const coreStatus = data.core_status;
+                    const port = data.port;
                     
                     let statusText = '';
                     let statusClass = '';
                     
-                    switch (status) {
-                        case 'connected':
-                            statusText = '已连接';
-                            statusClass = 'connected';
-                            isConnected = true;
-                            break;
-                        case 'connecting':
-                            statusText = '连接中';
-                            statusClass = 'connecting';
-                            isConnected = false;
-                            break;
-                        case 'key_exchange':
-                            statusText = '密钥交换中';
-                            statusClass = 'connecting';
-                            isConnected = false;
-                            break;
-                        default:
-                            statusText = '未连接';
-                            statusClass = 'disconnected';
-                            isConnected = false;
+                    if (coreStatus === 'connected') {
+                        statusText = '已连接';
+                        statusClass = 'connected';
+                        isConnected = true;
+                    } else {
+                        statusText = '未连接';
+                        statusClass = 'disconnected';
+                        isConnected = false;
                     }
                     
-                    currentMode = mode;
-                    let modeText = mode === 'none' ? '未设置' : mode === 'server' ? '服务器' : '客户端';
-                    let portInfo = apiPort ? ` | API端口: ${apiPort}` : '';
-                    if (mode === 'server' && listenPort) {
-                        portInfo += ` | 监听端口: ${listenPort}`;
-                    }
-                    
-                    statusElement.textContent = `状态: ${statusText} | 模式: ${modeText}${portInfo}`;
+                    statusElement.textContent = `状态: ${statusText} | Web端口: ${port}`;
                     statusElement.className = `status ${statusClass}`;
                     
                     // 更新聊天按钮状态
@@ -286,6 +342,9 @@
                 })
                 .catch(error => {
                     log('更新状态失败: ' + error.message, 'error');
+                    const statusElement = document.getElementById('status');
+                    statusElement.textContent = '状态: 连接错误';
+                    statusElement.className = 'status disconnected';
                 });
         }
 
@@ -307,10 +366,11 @@
                     return;
                 }
                 
-                setting.destination = { host: host, port: port };
+                setting.ip = host;
+                setting.port = port;
             }
 
-            fetch('/setting', {
+            fetch('/api/setting', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -320,7 +380,7 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    showResult('config-result', '配置成功!');
+                    showResult('config-result', data.message || '配置成功!');
                     log(`配置为${mode}模式`);
                     setTimeout(updateStatus, 1000);
                 } else {
@@ -342,7 +402,7 @@
                 return;
             }
 
-            fetch('/chat/send', {
+            fetch('/api/send', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -368,31 +428,13 @@
         }
 
         function receiveMessages() {
-            if (!isConnected) return;
-            
-            fetch('/chat/messages')
+            fetch('/api/messages')
                 .then(response => response.json())
-                .then(messages => {
-                    if (Array.isArray(messages) && messages.length > 0) {
-                        messages.forEach(encryptedMessage => {
-                            // 解密消息
-                            fetch('/chat/receive', {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json'
-                                },
-                                body: JSON.stringify({ encrypted_message: encryptedMessage })
-                            })
-                            .then(response => response.json())
-                            .then(data => {
-                                if (data.message) {
-                                    addChatMessage(data.message, false);
-                                    log(`收到消息: ${data.message}`);
-                                }
-                            })
-                            .catch(error => {
-                                log('解密消息失败: ' + error.message, 'error');
-                            });
+                .then(data => {
+                    if (data.messages && Array.isArray(data.messages) && data.messages.length > 0) {
+                        data.messages.forEach(message => {
+                            addChatMessage(message, false);
+                            log(`收到消息: ${message}`);
                         });
                     }
                 })
@@ -422,6 +464,39 @@
                 sendMessage();
             }
         });
+
+        // 深色模式切换功能
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const themeToggle = document.querySelector('.theme-toggle');
+            
+            if (currentTheme === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'light');
+                themeToggle.textContent = '🌙';
+                localStorage.setItem('theme', 'light');
+            } else {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                themeToggle.textContent = '☀️';
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+
+        // 页面加载时恢复主题设置
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            const themeToggle = document.querySelector('.theme-toggle');
+            
+            if (savedTheme === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                themeToggle.textContent = '☀️';
+            } else {
+                document.documentElement.setAttribute('data-theme', 'light');
+                themeToggle.textContent = '🌙';
+            }
+        }
+
+        // 初始化主题
+        initTheme();
     </script>
 </body>
 </html>
