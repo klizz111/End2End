@@ -100,17 +100,28 @@ bool Core::startClient(const string& host, int port) {
 }
 
 void Core::setupServerRoutes() {
-    // 处理密钥交换
+    // CORS配置
+    server->set_pre_routing_handler([](const httplib::Request& req, httplib::Response& res) {
+        // 设置CORS头
+        res.set_header("Access-Control-Allow-Origin", "*"); // 跨域支持
+        res.set_header("Access-Control-Allow-Methods", "GET, POST");
+        res.set_header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+        res.set_header("Access-Control-Max-Age", "86400");
+                
+        return httplib::Server::HandlerResponse::Unhandled;
+    });
+
+    // 密钥交换
     server->Post("/api/key_exchange", [this](const httplib::Request& req, httplib::Response& res) {
         handleKeyExchange(req, res);
     });
     
-    // 处理发送消息
+    // 发送消息
     server->Post("/api/send_message", [this](const httplib::Request& req, httplib::Response& res) {
         handleSendMessage(req, res);
     });
     
-    // 处理接收消息
+    // 接收消息
     server->Get("/api/receive_messages", [this](const httplib::Request& req, httplib::Response& res) {
         handleReceiveMessages(req, res);
     });

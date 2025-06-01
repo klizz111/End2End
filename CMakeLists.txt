@@ -29,6 +29,21 @@ file(GLOB_RECURSE SM4 "sm4/sm34.cpp")
 file(GLOB_RECURSE ENCRYPTER "encrypter/encrypter.cpp")
 # file(GLOB_RECURSE SERVER_SRC "server/server.cpp")
 
+add_library(core_lib STATIC
+    ${GETPRIME}
+    ${SM4}
+    ${ELGAMAL}
+    ${ENCRYPTER}
+    core/core.cpp
+)
+
+set_target_properties(core_lib PROPERTIES
+    POSITION_INDEPENDENT_CODE ON
+    ARCHIVE_OUTPUT_DIRECTORY ${ROJECT_SOURCE_DIR}/lib
+)
+
+target_link_libraries(core_lib gmp gmpxx pthread)
+
 # 添加可执行文件
 # add_executable(Miller-Rabin ${GETPRIME} getPrime/test_MillerRabbin.cpp)
 # add_executable(Miller-Rabbin ${GETPRIME} getPrime/test/Miller-Rabbin.cpp)
@@ -38,8 +53,8 @@ file(GLOB_RECURSE ENCRYPTER "encrypter/encrypter.cpp")
 # add_executable(server ${GETPRIME} ${SM4} ${ELGAMAL} ${ENCRYPTER} server/main.cpp)
 # add_executable(test_server ${GETPRIME} ${SM4} ${ELGAMAL} ${ENCRYPTER} ${SERVER_SRC} server/test_server.cpp)
 # add_executable(getPrime_test ${GETPRIME} getPrime/test_getPrime.cpp)
-add_executable(test_client ${GETPRIME} ${SM4} ${ELGAMAL} ${ENCRYPTER} core/core.cpp core/test_client.cpp)
-add_executable(test_server ${GETPRIME} ${SM4} ${ELGAMAL} ${ENCRYPTER} core/core.cpp core/test_server.cpp)
+add_executable(test_client core/test_client.cpp)
+add_executable(test_server core/test_server.cpp)
 
 # 处理静态链接
 function(configure_target target_name output_dir)
@@ -52,8 +67,8 @@ function(configure_target target_name output_dir)
     set_target_properties(${target_name} PROPERTIES LINK_SEARCH_END_STATIC ON)
     
     # 链接库
-    # target_link_libraries(${target_name} -static gmp gmpxx pthread)
-    target_link_libraries(${target_name} gmp gmpxx pthread)
+    target_link_libraries(${target_name} -static core_lib) # 静态链接
+    # target_link_libraries(${target_name} gmp gmpxx pthread) # 动态链接
 endfunction()
 
 # configure_target(End2End ${PROJECT_SOURCE_DIR})

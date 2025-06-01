@@ -9,19 +9,16 @@ using namespace std;
 int main() {
     cout << "=== Server测试 ===" << endl;
     
-    // 创建服务器实例
     Core server(256);
     
-    // 设置消息接收处理器
     server.setMessageHandler([](const string& message) {
         cout << "\n[收到消息] " << message << endl;
         cout << "请输入回复消息 (输入 'quit' 退出): ";
         cout.flush();
     });
     
-    // 启动服务器
     cout << "正在启动服务器..." << endl;
-    if (!server.startServer("0.0.0.0", 8080)) {
+    if (!server.startServer("0.0.0.0", 8848)) {
         cout << "服务器启动失败!" << endl;
         return 1;
     }
@@ -29,7 +26,6 @@ int main() {
     cout << "服务器已启动，等待客户端连接..." << endl;
     cout << "服务器地址: localhost:8080" << endl;
     
-    // 等待连接建立
     server.waitForConnection();
     
     if (server.isConnected()) {

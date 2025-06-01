@@ -1,1 +1,1 @@
-F:/Web/live2d/vitepress/docs/end2end.md
+/mnt/f/Web/live2d/vitepress/docs/end2end.md

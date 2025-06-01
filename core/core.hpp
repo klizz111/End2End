@@ -44,8 +44,8 @@ public:
     Core(int bits = 256);
     ~Core();
 
-    bool startServer(const string& host = "localhost", int port = 8080);
-    bool startClient(const string& host = "localhost", int port = 8080);
+    bool startServer(const string& host = "localhost", int port = 8848);
+    bool startClient(const string& host = "localhost", int port = 8848);
     
     bool sendMessage(const string& message);
     void setMessageHandler(function<void(const string&)> handler);
