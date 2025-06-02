@@ -1,1 +1,0 @@
-/mnt/f/Web/live2d/vitepress/docs/end2end.md
