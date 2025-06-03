@@ -91,9 +91,9 @@ int main(int argc, char* argv[]) {
         }
     }
     
-    cout << "=== End2End 前端服务器 ===" << endl;
+    cout << "=== End2End WebServer===" << endl;
     cout << "加密位数: " << bits << endl;
-    cout << "按 Ctrl+C 退出服务器" << endl;
+    cout << "按 Ctrl+C 退出" << endl;
     cout << "=========================" << endl;
     
     auto webServer = new WebServer(port);

@@ -18,12 +18,12 @@ Core::Core(int bits)
     encryptor = make_unique<MessageEncryptor>(bits);
     sessionId = generateSessionId();
     updateLastActivity();
-    log("SecureCommunicationCore initialized with " + to_string(bits) + " bits");
+    log("Core initialized with " + to_string(bits) + " bits");
 }
 
 Core::~Core() {
     stop();
-    log("SecureCommunicationCore destroyed", IMPORTANT);
+    log("Core destroyed", IMPORTANT);
 }
 
 bool Core::startServer(const string& host, int port) {

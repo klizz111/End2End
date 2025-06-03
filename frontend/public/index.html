@@ -393,7 +393,6 @@
                     log(`配置为${mode}模式`);
                     setTimeout(updateStatus, 1000);
                     
-                    // 清空已处理消息记录，重新开始
                     processedMessages.clear();
                 } else {
                     showResult('config-result', '配置失败: ' + (data.error || '未知错误'), true);
@@ -430,7 +429,7 @@
                     showResult('chat-result', '消息发送成功!');
                     log(`发送消息: ${message}`);
                     
-                    // 记录已发送的消息，避免重复显示
+                    // 记录已发送的消息
                     processedMessages.add(message);
                 } else {
                     showResult('chat-result', '发送失败: ' + (data.error || '未知错误'), true);
@@ -458,7 +457,7 @@
                     }
                 })
                 .catch(error => {
-                    // 静默处理，避免频繁错误日志
+                    
                 });
         }
 
@@ -484,7 +483,7 @@
             }
         });
 
-        // 深色模式切换功能
+        // 深色模式切换
         function toggleTheme() {
             const currentTheme = document.documentElement.getAttribute('data-theme');
             const themeToggle = document.querySelector('.theme-toggle');
@@ -500,7 +499,6 @@
             }
         }
 
-        // 页面加载时恢复主题设置
         function initTheme() {
             const savedTheme = localStorage.getItem('theme');
             const themeToggle = document.querySelector('.theme-toggle');
@@ -514,7 +512,6 @@
             }
         }
 
-        // 初始化主题
         initTheme();
     </script>
 </body>

@@ -33,7 +33,7 @@ ElGamal::~ElGamal()
 // gen p q g h x y
 void ElGamal::keygen()
 {
-    // 1. 生成安全素数 p = 2q + 1
+    // 1. 生成素数 p = 2q + 1
     genSafePrime(p, q, bits);
     
     // 2. 选取生成元 g

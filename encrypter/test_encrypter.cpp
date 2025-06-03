@@ -41,10 +41,13 @@ int main() {
 
     cout << "key1= " << key1 << endl;
     cout << "key2= " << key2 << endl;
-    
-    string message = "你好你好你好你好你好你好你好你好你好你好你好你好";
+    string plaintext;
+    cout << "Input plaintext message: " << endl;
+    cin.ignore(); // Clear the newline character from the input buffer
+    getline(cin, plaintext);
+
     string encrypted_message;
-    encrypter.EncryptMessage(message, encrypted_message);
+    encrypter.EncryptMessage(plaintext, encrypted_message);
     cout << "Encrypted message: " << encrypted_message << endl;
 
     string secret;
