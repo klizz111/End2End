@@ -2,4 +2,7 @@
 /CMakeFiles
 /Makefile
 /cmake_install.cmake
-/test/**
+/test/
+/lib
+end2end
+end2end.md

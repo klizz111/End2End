@@ -1,11 +1,25 @@
 #include "elgamal.hpp"
 #include <ctime>
+#include <random>
+#include <chrono>
 
 ElGamal::ElGamal(int bits) : bits(bits), is_cleaned(false)
 {
     mpz_inits(p, g, y, x, q, NULL);
     gmp_randinit_default(state);
-    gmp_randseed_ui(state, time(NULL));
+    
+    auto now = std::chrono::high_resolution_clock::now();
+    auto duration = now.time_since_epoch();
+    auto nanoseconds = std::chrono::duration_cast<std::chrono::nanoseconds>(duration).count();
+    
+    // 结合时间、地址和随机设备
+    std::random_device rd;
+    unsigned long seed = static_cast<unsigned long>(nanoseconds) ^ 
+                        reinterpret_cast<uintptr_t>(this) ^ 
+                        rd() ^ 
+                        static_cast<unsigned long>(time(NULL));
+    
+    gmp_randseed_ui(state, seed);
 }
 
 ElGamal::~ElGamal()
@@ -19,7 +33,7 @@ ElGamal::~ElGamal()
 // gen p q g h x y
 void ElGamal::keygen()
 {
-    // 1. 生成安全素数 p = 2q + 1
+    // 1. 生成素数 p = 2q + 1
     genSafePrime(p, q, bits);
     
     // 2. 选取生成元 g

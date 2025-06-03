@@ -1,6 +1,8 @@
 #include "getPrime.hpp"
 #include <cstdlib>
 #include <ctime>
+#include <random>
+#include <chrono>
 
 // 全局随机数状态
 static gmp_randstate_t global_rand_state;
@@ -10,7 +12,19 @@ static bool rand_state_initialized = false;
 static void init_global_rand_state() {
     if (!rand_state_initialized) {
         gmp_randinit_default(global_rand_state);
-        gmp_randseed_ui(global_rand_state, time(NULL));
+        
+        auto now = std::chrono::high_resolution_clock::now();
+        auto duration = now.time_since_epoch();
+        auto nanoseconds = std::chrono::duration_cast<std::chrono::nanoseconds>(duration).count();
+        
+        std::random_device rd;
+        unsigned long seed = static_cast<unsigned long>(nanoseconds) ^ 
+                            reinterpret_cast<uintptr_t>(&global_rand_state) ^ 
+                            rd() ^ 
+                            static_cast<unsigned long>(time(NULL)) ^
+                            static_cast<unsigned long>(clock());
+        
+        gmp_randseed_ui(global_rand_state, seed);
         rand_state_initialized = true;
         
         // 注册清理函数，程序退出时自动清理
@@ -48,22 +62,19 @@ std::istream &operator>>(std::istream &is, mpz_t &mpz)
 
 bool MillerRabin(mpz_t n, int k)
 {
-    // 处理小于 2 的数
     if (mpz_cmp_ui(n, 2) < 0) {
         return false;
     }
     
-    // 处理 2 和 3
     if (mpz_cmp_ui(n, 2) == 0 || mpz_cmp_ui(n, 3) == 0) {
         return true;
     }
     
-    // 处理偶数
     if (mpz_even_p(n)) {
         return false;
     }
     
-    // 将 n-1 写成 2^r * d 的形式
+    // 1. 将 n-1 写成 2^r * d 的形式
     mpz_t n_minus_1, d, temp, a, x;
     mpz_init(n_minus_1);
     mpz_init(d);
@@ -71,24 +82,24 @@ bool MillerRabin(mpz_t n, int k)
     mpz_init(a);
     mpz_init(x);
     
-    mpz_sub_ui(n_minus_1, n, 1);
-    mpz_set(d, n_minus_1);
+    mpz_sub_ui(n_minus_1, n, 1); // n_minus_1 = n - 1
+    mpz_set(d, n_minus_1); // d = n - 1
     
     int r = 0;
-    while (mpz_even_p(d)) {
-        mpz_fdiv_q_ui(d, d, 2);
+    while (mpz_even_p(d)) { // n-1 = 2^r * d
+        mpz_fdiv_q_ui(d, d, 2); 
         r++;
     }
     
     // 使用全局随机数状态
     gmp_randstate_t& state = get_global_rand_state();
     
-    // 进行 k 轮测试
+    // 2. 进行 k 轮测试
     for (int i = 0; i < k; i++) {
         // 生成随机数 a，范围 [2, n-2]
-        mpz_sub_ui(temp, n, 3);  // n-3
-        mpz_urandomm(a, state, temp);  // [0, n-4]
-        mpz_add_ui(a, a, 2);  // [2, n-2]
+        mpz_sub_ui(temp, n, 3);  // temp = n-3
+        mpz_urandomm(a, state, temp);  // ∈ [0, n-4]
+        mpz_add_ui(a, a, 2);  // ∈ [2, n-2]
         
         // 计算 x = a^d mod n
         mpz_powm(x, a, d, n);
@@ -138,7 +149,6 @@ void getPrime(mpz_t p, int bits)
     mpz_init(candidate);
     
     do {
-        // 生成指定位数的随机数
         mpz_urandomb(candidate, state, bits);
         
         // 确保最高位为 1（保证位数）
