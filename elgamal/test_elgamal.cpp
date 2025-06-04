@@ -6,7 +6,7 @@ using namespace std;
 
 int main() {
     auto start = std::chrono::high_resolution_clock::now();
-    ElGamal elgamal(512);
+    ElGamal elgamal(1024);
     elgamal.keygen();
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = chrono::duration_cast<std::chrono::milliseconds>(end - start);
@@ -24,7 +24,7 @@ int main() {
     elgamal.encrypt(m, c1, c2);
     end = std::chrono::high_resolution_clock::now();
     auto duration_ = chrono::duration_cast<std::chrono::microseconds>(end - start);
-    cout << "Encryption time: " << duration.count() << " us" << endl;
+    cout << "Encryption time: " << duration_.count() << " us" << endl;
     // 解密
     mpz_t decrypted_m;
     mpz_init(decrypted_m);
@@ -33,7 +33,7 @@ int main() {
     elgamal.decrypt(c1, c2, decrypted_m);
     end = std::chrono::high_resolution_clock::now();
     duration_ = chrono::duration_cast<std::chrono::microseconds>(end - start);
-    cout << "Decryption time: " << duration.count() << " us" << endl;
+    cout << "Decryption time: " << duration_.count() << " us" << endl;
     cout << "Decrypted message: " << decrypted_m << endl;
 
     return 0;

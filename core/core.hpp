@@ -92,7 +92,6 @@ private:
     string sessionId;
     chrono::steady_clock::time_point lastActivity;
     
-    // 内部方法
     void setState(ConnectionState newState);
     void setupServerRoutes();
     // void startPolling();

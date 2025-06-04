@@ -49,6 +49,7 @@ target_link_libraries(core_lib gmp gmpxx pthread)
 # 添加可执行文件
 add_executable(MillerRabin getPrime/test_MillerRabbin.cpp)
 add_executable(elgamal encrypter/test_encrypter.cpp)
+add_executable(elgamal_test elgamal/test_elgamal.cpp)
 add_executable(test_client core/test_client.cpp)
 add_executable(test_server core/test_server.cpp)
 
@@ -71,6 +72,7 @@ endfunction()
 # 配置目标
 configure_target(MillerRabin ${PROJECT_SOURCE_DIR}/test)
 configure_target(elgamal ${PROJECT_SOURCE_DIR}/test)
+configure_target(elgamal_test ${PROJECT_SOURCE_DIR}/test)
 configure_target(test_client ${PROJECT_SOURCE_DIR}/test)
 configure_target(test_server ${PROJECT_SOURCE_DIR}/test)
 configure_target(end2end ${PROJECT_SOURCE_DIR})

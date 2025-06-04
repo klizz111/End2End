@@ -11,7 +11,7 @@ int main() {
     
     // 获取服务器地址
     string host = "localhost";
-    int port = 8080;
+    int port = 8848;
     
     cout << "请输入服务器地址 (默认: localhost): ";
     string input;
